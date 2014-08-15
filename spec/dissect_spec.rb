@@ -30,5 +30,12 @@ describe Dissect do
         term[:terms].downcase.should == 'yamaha electric bass'
       end
     end
+
+    it "should return a match for football" do
+      terms = Dissect.phraser('Football', brands, items)
+      terms.each do |term|
+        term[:item][:name].should == 'football'
+      end
+    end
   end
 end
