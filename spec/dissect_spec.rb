@@ -16,7 +16,8 @@ describe Dissect do
       {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender'},
       {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio'},
       {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender'},
-      {name: 'football', brands: 'Nike'}
+      {name: 'football', brands: 'Nike'},
+      {name: 'shoes', brands: 'Nike'}
     ]
   end
 
@@ -35,6 +36,13 @@ describe Dissect do
       terms = Dissect.phraser('Football', brands, items)
       terms.each do |term|
         term[:item][:name].should == 'football'
+      end
+    end
+
+    it "should return a match for Nike shoes" do
+      terms = Dissect.phraser('Nike shoes', brands, items)
+      terms.each do |term|
+        term[:terms].should == 'Nike shoes'
       end
     end
   end

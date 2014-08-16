@@ -18,6 +18,7 @@ module Dissect
     jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
     brands.each do |brand|
       _categories = brand[:categories]
+      next if brand[:name].blank?
       brand_names = brand[:name].split(",").map(&:strip)
       brand_names.each do |b_name|
         phrazy = sentence
@@ -47,7 +48,7 @@ module Dissect
       end
       sentence, _terms = term_builder(sentence, brand[:name], jarow)
       puts "Terms are #{_terms}"
-      break if _terms.blank?
+      break if _terms.blank? && sentence.blank?
     end
     return results.compact if sentence.blank?
     items.each do |item|
