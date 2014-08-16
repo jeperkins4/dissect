@@ -8,7 +8,10 @@ describe Dissect do
       {name: 'Gibson', categories: 'Musical Instrument'},
       {name: 'Casio', categories: 'Musical Instrument'},
       {name: 'Ibanez', categories: 'Musical Instrument'},
-      {name: 'Nike', categories: 'Sporting Goods'}
+      {name: 'Nike', categories: 'Sporting Goods'},
+      {name: 'Wilson', categories: 'Sporting Goods'},
+      {name: 'Adidas', categories: 'Clothing'},
+      {name: 'Blundstone', categories: 'Clothing'}
     ]
   end
   let(:items) do
@@ -16,8 +19,8 @@ describe Dissect do
       {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender'},
       {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio'},
       {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender'},
-      {name: 'football', brands: 'Nike'},
-      {name: 'shoes', brands: 'Nike'}
+      {name: 'football', brands: 'Nike,Wilson'},
+      {name: 'shoes', brands: 'Blundstone,Nike,Adidas'}
     ]
   end
 
