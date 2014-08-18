@@ -8,6 +8,7 @@ describe Dissect do
       {name: 'Gibson', categories: 'Musical Instrument'},
       {name: 'Casio', categories: 'Musical Instrument'},
       {name: 'Ibanez', categories: 'Musical Instrument'},
+      {name: 'Apple Computers', alternates: 'Apple', categories: 'Computers, Tablets, Phones, Electronics'},
       {name: 'Nike', categories: 'Sporting Goods'},
       {name: 'Wilson', categories: 'Sporting Goods'},
       {name: 'Adidas', categories: 'Clothing'},
@@ -20,6 +21,7 @@ describe Dissect do
       {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio'},
       {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender'},
       {name: 'football', brands: 'Nike,Wilson'},
+      {name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
       {name: 'shoes', brands: 'Blundstone,Nike,Adidas'}
     ]
   end
@@ -46,6 +48,13 @@ describe Dissect do
       terms = Dissect.phraser('Nike shoes', brands, items)
       terms.each do |term|
         term[:terms].should == 'Nike shoes'
+      end
+    end
+
+    it "should return a match for Apple" do
+      terms = Dissect.phraser('Apple Macbook Pro', brands, items)
+      terms.each do |term|
+        term[:terms].should == 'Apple Macbook Pro'
       end
     end
   end

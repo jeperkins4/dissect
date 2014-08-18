@@ -20,14 +20,15 @@ module Dissect
       _categories = brand[:categories]
       next if brand[:name].blank?
       brand_names = brand[:name].split(",").map(&:strip)
+      if brand.has_key?(:alternates)
+        brand[:alternates].split(",").map(&:strip).each do |alt|
+          brand_names << alt
+        end
+      end
       brand_names.each do |b_name|
         phrazy = sentence
         sentence, _terms = term_builder(sentence, b_name, jarow)
         if phrazy.length != sentence.length
-          if brand.has_key?(:alternates)
-            alternates = brand[:alternates].split(',').map(&:strip)
-            alternates.each{|alt|b_name = b_name.gsub(alt,'').strip}
-          end
           _item = nil
           brand_items = items.select{|i|i[:brands].include?(b_name)}
           brand_items.each do |item|
@@ -37,7 +38,7 @@ module Dissect
                 _terms = [_terms, matched_term].join(' ')
                 _item = item
               end
-              _categories ||= item[:categories]
+              _categories ||= item[:category]
               #puts "Sentence #{sentence}, Terms #{matched_term}, Name #{name}"
             end
           end
@@ -50,6 +51,7 @@ module Dissect
       puts "Terms are #{_terms}"
       break if _terms.blank? && sentence.blank?
     end
+    byebug
     return results if sentence.blank?
     items.each do |item|
       item_names = item[:name].split(',').map(&:strip)
@@ -75,7 +77,7 @@ module Dissect
       #results << { terms: word, brand: nil, category: other } unless ignore_words.include?(word)
       results << { terms: word, brand: nil, category: 'Other'} unless ['and','the','a','of','an','some'].include?(word)
     end
-    return results.compact
+    return results
   end
 
   def self.term_builder(sentence, word, jarow)
