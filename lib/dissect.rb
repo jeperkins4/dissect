@@ -29,7 +29,7 @@ module Dissect
             alternates.each{|alt|b_name = b_name.gsub(alt,'').strip}
           end
           _item = nil
-          brand_items = items.select{|i|i if i[:brands].split(",").include?(b_name)}
+          brand_items = items.select{|i|i[:brands].include?(b_name)}
           brand_items.each do |item|
             modified_names(item).each do |name|
               sentence, matched_term = term_builder(sentence, name, jarow)
