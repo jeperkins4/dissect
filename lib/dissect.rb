@@ -5,7 +5,7 @@ require 'fuzzystringmatch'
 
 module Dissect
   def self.phraser(sentence, brands, items)
-    results = []
+    results = Set.new
     _categories = nil
     sentence = sentence.downcase #Force downcase on string
     sentence = sentence.split(
@@ -50,7 +50,7 @@ module Dissect
       puts "Terms are #{_terms}"
       break if _terms.blank? && sentence.blank?
     end
-    return results.compact if sentence.blank?
+    return results if sentence.blank?
     items.each do |item|
       item_names = item[:name].split(',').map(&:strip)
       item_names.each do |item_name|
@@ -65,7 +65,7 @@ module Dissect
           item = items.select{|i|i if i[:name].split(',').map(&:strip).include?(item_name)}.first
           results << { terms: _terms, item: item, brand: nil, category: item[:category] }
         end
-        return results.compact if sentence.blank?
+        return results if sentence.blank?
       end
       #ignore_words = BLACKLIST[:ignore_words].split(',').map(&:strip)
       #ignore_words += BLACKLIST[:curse_words].split(',').map(&:strip)
