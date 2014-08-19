@@ -17,42 +17,43 @@ describe Dissect do
   end
   let(:items) do
     [
-      {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender'},
-      {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio'},
-      {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender'},
-      {name: 'football', brands: 'Nike,Wilson'},
-      {name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
-      {name: 'shoes', brands: 'Blundstone,Nike,Adidas'}
+      {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender', category: 'Musical Instrument'},
+      {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio', category: 'Musical Instrument'},
+      {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender', category: 'Musical Instrument'},
+      {name: 'football', brands: 'Nike,Wilson', category: 'Sporting Goods'},
+      #{name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
+      {:id=>3368, :name=>"macbook", :modifiers=>"pro, air", :brands=>"Apple Computer, LOVEdecal, Consumer Electronics Store,iBenzer,Kuzy,Case Logic,fds,Moshi,Apple", :category=>"Electronics"},
+      {name: 'shoes', brands: 'Blundstone,Nike,Adidas', category: 'Clothing'}
     ]
   end
 
   context 'phraser' do
     it "should return a match" do
-      terms = Dissect.phraser('Yamaha Electric Bass', brands, items)
+      terms = Dissect.phraser('Yamaha Electric Bass', items)
       terms.each do |term|
-        term[:brand][:name].should == 'Yamaha'
         term[:item][:name].should == 'bass'
         term[:category].should == 'Musical Instrument'
         term[:terms].downcase.should == 'yamaha electric bass'
+        term[:brand].should == 'Yamaha'
       end
     end
 
     it "should return a match for football" do
-      terms = Dissect.phraser('Football', brands, items)
+      terms = Dissect.phraser('Football', items)
       terms.each do |term|
         term[:item][:name].should == 'football'
       end
     end
 
     it "should return a match for Nike shoes" do
-      terms = Dissect.phraser('Nike shoes', brands, items)
+      terms = Dissect.phraser('Nike shoes', items)
       terms.each do |term|
         term[:terms].should == 'Nike Shoes'
       end
     end
 
     it "should return a match for Apple" do
-      terms = Dissect.phraser('Apple Macbook Pro', brands, items)
+      terms = Dissect.phraser('Apple Macbook Pro', items)
       terms.each do |term|
         term[:terms].should == 'Apple Macbook Pro'
       end

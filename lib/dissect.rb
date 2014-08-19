@@ -4,7 +4,7 @@ require "dissect/ngram"
 require 'fuzzystringmatch'
 
 module Dissect
-  def self.phraser(sentence, brands, items)
+  def self.phraser(sentence, items)
     results = Set.new
     _categories = nil
     sentence = sentence.downcase #Force downcase on string
@@ -16,61 +16,28 @@ module Dissect
     [\r\n]+     # any number of newline characters
     /x).join(' ')
     jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
-    brands.each do |brand|
-      _categories = brand[:categories]
-      next if brand[:name].blank?
-      brand_names = brand[:name].split(",").map(&:strip)
-      if brand.has_key?(:alternates)
-        brand[:alternates].split(",").map(&:strip).each do |alt|
-          brand_names << alt
-        end
+    items.each do |item|
+      names = Set.new
+      brand_names = item.has_key?(:brands) ? item[:brands].split(",").map(&:strip) : []
+      modifiers = item.has_key?(:modifiers) ? item[:modifiers].split(",").map(&:strip) : []
+      alternates = item.has_key?(:alternates) ? item[:alternates].split(",").map(&:strip) : []
+      names = modified_names(item)
+      brand_names.each do |brand_name|
+        names += modified_names(item, brand_name)
       end
-      brand_names.each do |b_name|
-        phrazy = sentence
-        sentence, _terms = term_builder(sentence, b_name, jarow)
+      phrazy = sentence
+      names.each do |name|
+        sentence, _terms = term_builder(sentence, name, jarow)
         if phrazy.length != sentence.length
-          sentence = phrazy
-          _item = nil
-          brand_items = items.select{|i|i[:brands].include?(b_name)}
-          brand_items.each do |item|
-            modified_names(item, b_name).each do |name|
-              sentence, matched_term = term_builder(sentence, name, jarow)
-              unless matched_term.blank?
-                _terms = matched_term
-                _item = item
-              end
-              _categories = item[:category] unless item[:category].blank?
-            end
-          end
-          _item = brand_items.first if _item.nil? && !brand_items.empty?
-          _terms = _terms.titleize #Properly titleize brand names
-          results << { terms: _terms, item: _item, brand: brand, category: _categories }
+          _terms = _terms.titleize
+          _categories = item[:category]
+          brand = brand_names.select{|bn|_terms.include?(bn)}
+          results << { terms: _terms, item: item, brand: brand.first, category: _categories } unless _terms.blank?
+          break if sentence.blank?
         end
       end
-      sentence, _terms = term_builder(sentence, brand[:name], jarow)
-      puts "Terms are #{_terms}"
-      break if _terms.blank? && sentence.blank?
     end
     return results if sentence.blank?
-    items.each do |item|
-      item_names = item[:name].split(',').map(&:strip)
-      item_names.each do |item_name|
-        sentence, _terms = term_builder(sentence, item_name, jarow)
-        #debugger if _terms.include? 'Meat'
-
-        if _terms.downcase.include?(item_name.downcase)
-          item = items.select{|i|i if i[:name].split(',').map(&:strip).include?(item_name)}.first
-          results << { terms: _terms, item: item, brand: nil, category: item[:category] }
-        end
-        if sentence.blank? && results.empty?
-          item = items.select{|i|i if i[:name].split(',').map(&:strip).include?(item_name)}.first
-          results << { terms: _terms, item: item, brand: nil, category: item[:category] }
-        end
-        return results if sentence.blank?
-      end
-      #ignore_words = BLACKLIST[:ignore_words].split(',').map(&:strip)
-      #ignore_words += BLACKLIST[:curse_words].split(',').map(&:strip)
-    end
 
     sentence.split(" ").each do |word|
       #results << { terms: word, brand: nil, category: other } unless ignore_words.include?(word)
@@ -99,19 +66,19 @@ module Dissect
     return sentence, terms.join(", ")
   end
 
-  def self.modified_names(hash, b_name = nil)
-    names = [b_name, hash[:name]].compact
-    return names.permutation.to_a.map{|n|n.join(' ')} if hash[:modifiers].blank?
-    hash[:modifiers].split(",").map(&:strip).each do |modifier|
-      combo_list = [b_name, modifier, hash[:name]].compact
-      names += combo_list.permutation.to_a.map{|n|n.join(" ")}
-      if hash.has_key?(:alternates)
-        hash[:alternates].split(",").map(&:strip).each do |alt|
-          names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+  private
+    def self.modified_names(hash, b_name = nil)
+      names = [b_name, hash[:name]].compact
+      return names.permutation.to_a.map{|n|n.join(' ')} if hash[:modifiers].blank?
+      hash[:modifiers].split(",").map(&:strip).each do |modifier|
+        combo_list = [b_name, modifier, hash[:name]].compact
+        names += combo_list.permutation.to_a.map{|n|n.join(" ")}
+        if hash.has_key?(:alternates)
+          hash[:alternates].split(",").map(&:strip).each do |alt|
+            names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+          end
         end
       end
+      return names.sort_by{|n|n.split(' ').size}.reverse
     end
-    return names.sort_by{|n|n.split(' ').size}.reverse
-  end
-
 end
