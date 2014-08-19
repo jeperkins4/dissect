@@ -19,7 +19,7 @@ module Dissect
     items.each do |item|
       names = Set.new
       brand_names = item.has_key?(:brands) ? item[:brands].split(",").map(&:strip) : []
-      modifiers = item.has_key?(:modifiers) ? item[:modifiers].split(",").map(&:strip) : []
+      modifiers = item.has_key?(:modifiers) && !item[:modifiers].blank? ? item[:modifiers].split(",").map(&:strip) : []
       alternates = item.has_key?(:alternates) ? item[:alternates].split(",").map(&:strip) : []
       names = modified_names(item)
       brand_names.each do |brand_name|
