@@ -20,20 +20,20 @@ module Dissect
       names = Set.new
       brand_names = item.has_key?(:brands) ? item[:brands].split(",").map(&:strip) : []
       modifiers = item.has_key?(:modifiers) && !item[:modifiers].blank? ? item[:modifiers].split(",").map(&:strip) : []
-      alternates = item.has_key?(:alternates) ? item[:alternates].split(",").map(&:strip) : []
+      alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? item[:alternates].split(",").map(&:strip) : []
       names = modified_names(item)
       brand_names.each do |brand_name|
         names += modified_names(item, brand_name)
       end
+      names = names.sort_by{|n|n.split(' ').size}.reverse
       phrazy = sentence
       names.each do |name|
         sentence, _terms = term_builder(sentence, name, jarow)
         if phrazy.length != sentence.length
           _terms = _terms.titleize
           _categories = item[:category]
-          brand = brand_names.select{|bn|_terms.include?(bn)}
-          results << { terms: _terms, item: item, brand: brand.first, category: _categories } unless _terms.blank?
-          break if sentence.blank?
+          matched_brand = brand_names.select{|bn|_terms.include?(bn)}
+          results << { terms: _terms, item: item, brand: matched_brand.join(", "), category: _categories } unless _terms.blank?
         end
       end
     end
