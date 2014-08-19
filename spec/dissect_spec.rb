@@ -8,7 +8,7 @@ describe Dissect do
       {name: 'Gibson', categories: 'Musical Instrument'},
       {name: 'Casio', categories: 'Musical Instrument'},
       {name: 'Ibanez', categories: 'Musical Instrument'},
-      {name: 'Apple Computers', alternates: 'Apple', categories: 'Computers, Tablets, Phones, Electronics'},
+      {name: 'Apple Computer', alternates: 'Apple', categories: 'Computers, Tablets, Phones, Electronics'},
       {name: 'Nike', categories: 'Sporting Goods'},
       {name: 'Wilson', categories: 'Sporting Goods'},
       {name: 'Adidas', categories: 'Clothing'},
@@ -47,7 +47,7 @@ describe Dissect do
     it "should return a match for Nike shoes" do
       terms = Dissect.phraser('Nike shoes', brands, items)
       terms.each do |term|
-        term[:terms].should == 'Nike shoes'
+        term[:terms].should == 'Nike Shoes'
       end
     end
 
