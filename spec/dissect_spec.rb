@@ -47,6 +47,7 @@ describe Dissect do
 
     it "should return a match for Nike shoes" do
       terms = Dissect.phraser('Nike shoes', items)
+      byebug
       matched = terms.select{|term|term[:terms] == 'Nike Shoes'}
       matched.should_not be_empty
     end
