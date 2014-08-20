@@ -19,14 +19,15 @@ module Dissect
     phrazy = sentence
     items.each do |item|
       names = Set.new
-      brand_names = item.has_key?(:brands) ? item[:brands].split(",").map(&:strip) : []
+      brand_names = item.has_key?(:brands) && !item[:brands].blank? ? item[:brands].split(",").map(&:strip) : []
       alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? item[:alternates].split(",").map(&:strip) : []
-      item_list = alternates.push(item[:name])
+      item_list = alternates.push(item[:name]) # Item name + alternatives/aliases
       names = modified_names(item)
       brand_names.each do |brand_name|
         names += modified_names(item, brand_name)
       end
       names = names.uniq.sort_by{|n|n.split(' ').size}.reverse
+      #item[:permutations] = names
       names.each do |name|
         #byebug if item[:name] == 'shoes'
         sentence, _terms = term_builder(sentence, name, jarow)
@@ -41,6 +42,13 @@ module Dissect
       end
       break if sentence.blank?
       sentence = phrazy
+    end
+    sentence = phrazy
+    results.sort_by{|n|n[:terms].split(' ').size}.reverse.each do |result|
+      sentence, _terms = term_builder(sentence, result[:terms], jarow)
+      if _terms.blank?
+        results.delete(result)
+      end
     end
     return results if sentence.blank?
 
