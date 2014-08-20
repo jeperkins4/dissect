@@ -16,6 +16,7 @@ module Dissect
     [\r\n]+     # any number of newline characters
     /x).join(' ')
     jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
+    phrazy = sentence
     items.each do |item|
       names = Set.new
       brand_names = item.has_key?(:brands) ? item[:brands].split(",").map(&:strip) : []
@@ -25,9 +26,9 @@ module Dissect
       brand_names.each do |brand_name|
         names += modified_names(item, brand_name)
       end
-      names = names.sort_by{|n|n.split(' ').size}.reverse
-      phrazy = sentence
+      names = names.uniq.sort_by{|n|n.split(' ').size}.reverse
       names.each do |name|
+        #byebug if item[:name] == 'shoes'
         sentence, _terms = term_builder(sentence, name, jarow)
         if phrazy.length != sentence.length
           _terms = _terms.titleize
@@ -36,6 +37,8 @@ module Dissect
           results << { terms: _terms, item: item, brand: matched_brand.join(", "), category: _categories } unless _terms.blank?
         end
       end
+      break if sentence.blank?
+      sentence = phrazy
     end
     return results if sentence.blank?
 
@@ -69,13 +72,15 @@ module Dissect
   private
     def self.modified_names(hash, b_name = nil)
       names = [b_name, hash[:name]].compact
-      return names.permutation.to_a.map{|n|n.join(' ')} if hash[:modifiers].blank?
-      hash[:modifiers].split(",").map(&:strip).each do |modifier|
-        combo_list = [b_name, modifier, hash[:name]].compact
-        names += combo_list.permutation.to_a.map{|n|n.join(" ")}
-        if hash.has_key?(:alternates)
-          hash[:alternates].split(",").map(&:strip).each do |alt|
-            names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+      names += names.permutation.to_a.map{|n|n.join(' ')}
+      if hash.has_key?(:modifiers)
+        hash[:modifiers].split(",").map(&:strip).each do |modifier|
+          combo_list = [b_name, modifier, hash[:name]].compact
+          names += combo_list.permutation.to_a.map{|n|n.join(" ")}
+          if hash.has_key?(:alternates)
+            hash[:alternates].split(",").map(&:strip).each do |alt|
+              names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+            end
           end
         end
       end

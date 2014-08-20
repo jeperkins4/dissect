@@ -47,15 +47,21 @@ describe Dissect do
 
     it "should return a match for Nike shoes" do
       terms = Dissect.phraser('Nike shoes', items)
-      terms.each do |term|
-        term[:terms].should == 'Nike Shoes'
-      end
+      matched = terms.select{|term|term[:terms] == 'Nike Shoes'}
+      matched.should_not be_empty
     end
 
     it "should return a match for Apple" do
       terms = Dissect.phraser('Apple Macbook Pro', items)
       terms.each do |term|
         term[:terms].should == 'Apple Macbook Pro'
+      end
+    end
+
+    it "should return a match for Apple" do
+      terms = Dissect.phraser('Apple Macbook', items)
+      terms.each do |term|
+        term[:terms].should == 'Apple Macbook'
       end
     end
   end
