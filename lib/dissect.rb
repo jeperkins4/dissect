@@ -73,7 +73,7 @@ module Dissect
     def self.modified_names(hash, b_name = nil)
       names = [b_name, hash[:name]].compact
       names += names.permutation.to_a.map{|n|n.join(' ')}
-      if hash.has_key?(:modifiers)
+      if hash.has_key?(:modifiers) && !hash[:modifiers].blank?
         hash[:modifiers].split(",").map(&:strip).each do |modifier|
           combo_list = [b_name, modifier, hash[:name]].compact
           names += combo_list.permutation.to_a.map{|n|n.join(" ")}
