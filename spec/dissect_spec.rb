@@ -1,21 +1,8 @@
 require 'spec_helper'
 require 'stackprof'
 
-describe Dissect do
-  let(:brands) do
-    [
-      {name: 'Yamaha', categories: 'Musical Instrument'},
-      {name: 'Fender', categories: 'Musical Instrument'},
-      {name: 'Gibson', categories: 'Musical Instrument'},
-      {name: 'Casio', categories: 'Musical Instrument'},
-      {name: 'Ibanez', categories: 'Musical Instrument'},
-      {name: 'Apple Computer', alternates: 'Apple', categories: 'Computers, Tablets, Phones, Electronics'},
-      {name: 'Nike', categories: 'Sporting Goods'},
-      {name: 'Wilson', categories: 'Sporting Goods'},
-      {name: 'Adidas', categories: 'Clothing'},
-      {name: 'Blundstone', categories: 'Clothing'}
-    ]
-  end
+describe Dissect::Text do
+  let(:dissect) { Dissect::Text.new }
   let(:items) do
     [
       {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender', category: 'Musical Instrument'},
@@ -26,13 +13,15 @@ describe Dissect do
       #{name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
       {:id=>3368, :name=>"macbook", :modifiers=>"pro, air", :brands=>"Apple Computer, LOVEdecal, Consumer Electronics Store,iBenzer,Kuzy,Case Logic,fds,Moshi,Apple", :category=>"Electronics"},
       {name: 'shoes', brands: 'Blundstone,Nike,Adidas', category: 'Clothing'},
-      {name: 'merlot', brands: "Frog's Leap, Rodney Strong", category: 'Beer, Wine & Spirits' }
+      {name: 'merlot', brands: "Frog's Leap, Rodney Strong", category: 'Beer, Wine & Spirits' },
+      {name: 'cabernet sauvignon', brands: "Frog's Leap, Grgich Hills", category: 'Beer, Wine & Spirits' },
+      {name: 'Al Capone', brands: nil, category: 'Inmate' }
     ]
   end
 
   context 'phraser' do
     it "should return a match" do
-      terms = Dissect.phraser('Yamaha Electric Bass', items)
+      terms = dissect.phraser('Yamaha Electric Bass', items)
       terms.each do |term|
         term[:item][:name].should == 'bass'
         term[:category].should == 'Musical Instrument'
@@ -42,36 +31,43 @@ describe Dissect do
     end
 
     it "should return a match for football" do
-      terms = Dissect.phraser('Football', items)
+      terms = dissect.phraser('Football', items)
       terms.each do |term|
         term[:item][:name].should == 'football'
       end
     end
 
     it "should return a match for Nike shoes" do
-      terms = Dissect.phraser('Nike shoes', items)
+      terms = dissect.phraser('Nike shoes', items)
       matched = terms.select{|term|term[:terms] == 'Nike Shoes'}
       matched.should_not be_empty
     end
 
     it "should return a match for Apple" do
-      terms = Dissect.phraser('Apple Macbook Pro', items)
+      terms = dissect.phraser('Apple Macbook Pro', items)
       terms.each do |term|
         term[:terms].should == 'Apple Macbook Pro'
       end
     end
 
     it "should return a match for Apple" do
-      terms = Dissect.phraser('Apples', items)
+      terms = dissect.phraser('Apples', items)
       terms.each do |term|
         term[:terms].should == 'Apples'
       end
     end
 
     it "should return a match for Merlot" do
-      terms = Dissect.phraser('merlot', items)
+      terms = dissect.phraser('merlot', items)
       terms.each do |term|
-        term[:terms].should == 'merlot'
+        term[:terms].should == 'Merlot'
+      end
+    end
+
+    it "should return a match for Merlot" do
+      terms = dissect.phraser('cabernet sauvignon', items)
+      terms.each do |term|
+        term[:terms].should == 'Cabernet Sauvignon'
       end
     end
   end
