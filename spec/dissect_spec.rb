@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'stackprof'
 
 describe Dissect do
   let(:brands) do
@@ -24,7 +25,8 @@ describe Dissect do
       {name: 'football', brands: 'Nike,Wilson', category: 'Sporting Goods'},
       #{name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
       {:id=>3368, :name=>"macbook", :modifiers=>"pro, air", :brands=>"Apple Computer, LOVEdecal, Consumer Electronics Store,iBenzer,Kuzy,Case Logic,fds,Moshi,Apple", :category=>"Electronics"},
-      {name: 'shoes', brands: 'Blundstone,Nike,Adidas', category: 'Clothing'}
+      {name: 'shoes', brands: 'Blundstone,Nike,Adidas', category: 'Clothing'},
+      {name: 'merlot', brands: "Frog's Leap, Rodney Strong", category: 'Beer, Wine & Spirits' }
     ]
   end
 
@@ -63,6 +65,13 @@ describe Dissect do
       terms = Dissect.phraser('Apples', items)
       terms.each do |term|
         term[:terms].should == 'Apples'
+      end
+    end
+
+    it "should return a match for Merlot" do
+      terms = Dissect.phraser('merlot', items)
+      terms.each do |term|
+        term[:terms].should == 'merlot'
       end
     end
   end

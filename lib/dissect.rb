@@ -18,6 +18,7 @@ module Dissect
     jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
     phrazy = sentence
     items.each do |item|
+      t_start = Time.now
       names = Set.new
       brand_names = item.has_key?(:brands) && !item[:brands].blank? ? item[:brands].split(",").map(&:strip) : []
       alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? item[:alternates].split(",").map(&:strip) : []
@@ -38,7 +39,9 @@ module Dissect
             results << { terms: _terms, item: item, brand: matched_brand.uniq.join(", "), category: _categories }
           end
         end
+        break if sentence.blank?
       end
+      puts "Time is #{(Time.now - t_start)}"
       break if sentence.blank?
       sentence = phrazy
     end
@@ -79,8 +82,8 @@ module Dissect
 
   private
     def self.modified_names(hash, b_name = nil)
+      return if hash[:name].blank?
       names = [b_name, hash[:name]].compact
-      hash[:alternates].split(",").map(&:strip).each{|alt|names += [b_name, alt].compact} if hash.has_key?(:alternates) && !hash[:alternates].blank?
       names += names.permutation.to_a.map{|n|n.join(' ')}
       if hash.has_key?(:modifiers) && !hash[:modifiers].blank?
         hash[:modifiers].split(",").map(&:strip).each do |modifier|
@@ -91,6 +94,13 @@ module Dissect
               names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
             end
           end
+        end
+      else
+        if hash.has_key?(:alternates) && !hash[:alternates].blank?
+          hash[:alternates].split(",").map(&:strip).each do |alt|
+            names += [b_name, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+          end
+          puts "Names is now #{names}"
         end
       end
       return names.sort_by{|n|n.split(' ').size}.reverse
