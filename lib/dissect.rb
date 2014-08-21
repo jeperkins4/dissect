@@ -29,7 +29,6 @@ module Dissect
       names = names.uniq.sort_by{|n|n.split(' ').size}.reverse
       #item[:permutations] = names
       names.each do |name|
-        #byebug if item[:name] == 'shoes'
         sentence, _terms = term_builder(sentence, name, jarow)
         if phrazy.length != sentence.length
           _terms = _terms.titleize
@@ -68,7 +67,6 @@ module Dissect
       fragments = ngram.ngrams(i).map{|x|x.join(" ")}
       fragments.each do |fragment|
         score = jarow.getDistance(fragment.upcase, word.upcase)
-        #debugger if fragment == 'bell pepper' && word.include?('bell pepper')
         if score > 0.989
           puts "Score for #{sentence} is #{score} between ngram #{fragment} and phrase #{word}"
           terms << fragment.strip
