@@ -82,6 +82,7 @@ module Dissect
   private
     def self.modified_names(hash, b_name = nil)
       names = [b_name, hash[:name]].compact
+      hash[:alternates].split(",").map(&:strip).each{|alt|names += [b_name, alt].compact} if hash.has_key?(:alternates)
       names += names.permutation.to_a.map{|n|n.join(' ')}
       if hash.has_key?(:modifiers) && !hash[:modifiers].blank?
         hash[:modifiers].split(",").map(&:strip).each do |modifier|
