@@ -42,7 +42,7 @@ module Dissect
             _terms = _terms.titleize
             _categories = item[:category]
             matched_brand = brand_names.select{|bn|_terms.include?(bn)}
-            if !item_list.select{|il|phrazy.include?(il)}.empty? && !_terms.blank?
+            if !item_list.select{|il|phrazy.downcase.include?(il.downcase)}.empty? && !_terms.blank?
               results << { terms: _terms, item: item, brand: matched_brand.uniq.join(", "), category: _categories }
             end
           end
