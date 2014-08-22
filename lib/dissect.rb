@@ -62,7 +62,6 @@ module Dissect
           results.delete(result)
         end
       end
-      byebug
       return results if sentence.blank?
 
       sentence.split(" ").each do |word|
