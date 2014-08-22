@@ -12,9 +12,11 @@ module Dissect
     end
 
     def phraser(sentence, items)
+      # preprocess the items
+      items = items.select{|i|!(sentence.downcase.split & i[:name].downcase.split).empty? || !(sentence.downcase.split & splitter(i[:brands]).map{|b|b.downcase}).empty?}
       results = Set.new
       _categories = nil
-      sentence = sentence.downcase #Force downcase on string
+      sentence.downcase! #Force downcase on string
       sentence = sentence.split(
       /\s*[,;]\s* # comma or semicolon, optionally surrounded by whitespace
       |           # or
@@ -24,21 +26,18 @@ module Dissect
       /x).join(' ')
       jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
 
-      splitter = lambda {|sl|sl.split(",").map(&:strip)}
-
+      #t_start = Time.now
       phrazy = sentence
       items.each do |item|
-        t_start = Time.now
         names = Set.new
-        brand_names = item.has_key?(parent_key.to_sym) && !item[parent_key.to_sym].blank? ? splitter.call(item[parent_key.to_sym]) : []
-        alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? splitter.call(item[:alternates]) : []
+        brand_names = splitter(item[parent_key.to_sym]) if item.key?(parent_key.to_sym)
+        alternates = item.key?(:alternates) && !item[:alternates].blank? ? splitter(item[:alternates]) : []
         item_list = alternates.push(item[:name]) # Item name + alternatives/aliases
         names = modified_names(item)
         brand_names.each do |brand_name|
           names += modified_names(item, brand_name)
         end
         names = names.uniq.sort_by{|n|n.split(' ').size}.reverse
-        #item[:permutations] = names
         names.each do |name|
           sentence, _terms = term_builder(sentence, name, jarow)
           if phrazy.length != sentence.length
@@ -51,10 +50,10 @@ module Dissect
           end
           break if sentence.blank?
         end
-        #puts "Time is #{(Time.now - t_start)}"
         break if sentence.blank?
         sentence = phrazy
       end
+      #puts "Time is #{(Time.now - t_start)}"
       sentence = phrazy
       results.sort_by{|n|n[:terms].split(' ').size}.reverse.each do |result|
         sentence, _terms = term_builder(sentence, result[:terms], jarow)
@@ -65,7 +64,6 @@ module Dissect
       return results if sentence.blank?
 
       sentence.split(" ").each do |word|
-        #results << { terms: word, brand: nil, category: other } unless ignore_words.include?(word)
         results << { terms: word, brand: nil, category: 'Other'} unless ['and','the','a','of','an','some'].include?(word)
       end
       return results
@@ -73,15 +71,14 @@ module Dissect
 
     def term_builder(sentence, word, jarow)
       terms = []
-      word = word.strip
+      word = word.upcase.strip
       size = sentence.split.size # 9
       (size).downto(1) do |i|
         ngram = Ngram.new(sentence)
         fragments = ngram.ngrams(i).map{|x|x.join(" ")}
         fragments.each do |fragment|
-          score = jarow.getDistance(fragment.upcase, word.upcase)
-          if score > 0.99
-            puts "Score for #{sentence} is #{score} between ngram #{fragment} and phrase #{word}"
+          if jarow.getDistance(fragment.upcase, word) > 0.99
+            #puts "Score for #{sentence} is #{score} between ngram #{fragment} and phrase #{word}"
             terms << fragment.strip
             sentence = sentence.gsub(fragment,'')
           end
@@ -95,24 +92,25 @@ module Dissect
         return if hash[:name].blank?
         names = [b_name, hash[:name]].compact
         names += names.permutation.to_a.map{|n|n.join(' ')}
-        if hash.has_key?(:modifiers) && !hash[:modifiers].blank?
-          hash[:modifiers].split(",").map(&:strip).each do |modifier|
-            combo_list = [b_name, modifier, hash[:name]].compact
-            names += combo_list.permutation.to_a.map{|n|n.join(" ")}
-            if hash.has_key?(:alternates)
-              hash[:alternates].split(",").map(&:strip).each do |alt|
+        if hash.key?(:modifiers)
+          splitter(hash[:modifiers]).each do |modifier|
+            names += [b_name, modifier, hash[:name]].compact.permutation.to_a.map{|n|n.join(" ")}
+            if hash.key?(:alternates)
+              splitter(hash[:alternates]).each do |alt|
                 names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
               end
             end
           end
-        else
-          if hash.has_key?(:alternates) && !hash[:alternates].blank?
-            hash[:alternates].split(",").map(&:strip).each do |alt|
-              names += [b_name, alt].compact.permutation.to_a.map{|n|n.join(" ")}
-            end
+        elsif hash.key?(:alternates)
+          splitter(hash[:alternates]).each do |alt|
+            names += [b_name, alt].compact.permutation.to_a.map{|n|n.join(" ")}
           end
         end
-        return names.sort_by{|n|n.split(' ').size}.reverse
+        return names.sort_by{|n|n.split.size}.reverse
+      end
+
+      def splitter(line)
+        line.blank? ? [] : lambda{|sl|sl.split(",").map{|l|l.strip}}.call(line)
       end
   end
 end
