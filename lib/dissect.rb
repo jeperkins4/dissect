@@ -23,12 +23,15 @@ module Dissect
       [\r\n]+     # any number of newline characters
       /x).join(' ')
       jarow = FuzzyStringMatch::JaroWinkler.create(:pure)
+
+      splitter = lambda {|sl|sl.split(",").map(&:strip)}
+
       phrazy = sentence
       items.each do |item|
         t_start = Time.now
         names = Set.new
-        brand_names = item.has_key?(parent_key.to_sym) && !item[parent_key.to_sym].blank? ? item[parent_key.to_sym].split(",").map(&:strip) : []
-        alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? item[:alternates].split(",").map(&:strip) : []
+        brand_names = item.has_key?(parent_key.to_sym) && !item[parent_key.to_sym].blank? ? splitter.call(item[parent_key.to_sym]) : []
+        alternates = item.has_key?(:alternates) && !item[:alternates].blank? ? splitter.call(item[:alternates]) : []
         item_list = alternates.push(item[:name]) # Item name + alternatives/aliases
         names = modified_names(item)
         brand_names.each do |brand_name|
@@ -59,6 +62,7 @@ module Dissect
           results.delete(result)
         end
       end
+      byebug
       return results if sentence.blank?
 
       sentence.split(" ").each do |word|
@@ -77,7 +81,7 @@ module Dissect
         fragments = ngram.ngrams(i).map{|x|x.join(" ")}
         fragments.each do |fragment|
           score = jarow.getDistance(fragment.upcase, word.upcase)
-          if score > 0.989
+          if score > 0.99
             puts "Score for #{sentence} is #{score} between ngram #{fragment} and phrase #{word}"
             terms << fragment.strip
             sentence = sentence.gsub(fragment,'')

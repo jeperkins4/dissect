@@ -70,5 +70,10 @@ describe Dissect::Text do
         term[:terms].should == 'Cabernet Sauvignon'
       end
     end
+
+    it "should return a match for Shoes and Merlot" do
+      terms = dissect.phraser('shoes and merlot', items)
+      terms.map{|term|term[:terms]}.should include('Shoes')
+    end
   end
 end
