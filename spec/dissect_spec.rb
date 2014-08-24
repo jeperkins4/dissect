@@ -15,7 +15,8 @@ describe Dissect::Text do
       {name: 'shoes', brands: 'Blundstone,Nike,Adidas', category: 'Clothing'},
       {name: 'merlot', brands: "Frog's Leap, Rodney Strong", category: 'Beer, Wine & Spirits' },
       {name: 'cabernet sauvignon', brands: "Frog's Leap, Grgich Hills", category: 'Beer, Wine & Spirits' },
-      {name: 'Al Capone', brands: nil, category: 'Inmate' }
+      {name: 'Al Capone', brands: nil, category: 'Inmate' },
+      {name: "bottled water", modifiers: "spring, purified, distilled, mineral", brands: "Dasani, SmartWater, FIJI Water, FIJI, Fiji", alternates: "water, water bottles", category: "Beverages"}
     ]
   end
 
@@ -68,6 +69,13 @@ describe Dissect::Text do
       terms = dissect.phraser('cabernet sauvignon', items)
       terms.each do |term|
         term[:terms].should == 'Cabernet Sauvignon'
+      end
+    end
+
+    it "should return a match for water" do
+      terms = dissect.phraser('water', items)
+      terms.each do |term|
+        term[:terms].should == 'water'
       end
     end
 

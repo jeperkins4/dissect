@@ -92,6 +92,11 @@ module Dissect
         return if hash[:name].blank?
         names = [b_name, hash[:name]].compact
         names += names.permutation.to_a.map{|n|n.join(' ')}
+        if hash.key?(:alternates)
+          splitter(hash[:alternates]).each do |alt|
+            names += [b_name, alt].compact.permutation.to_a.map{|n|n.join(" ")}
+          end
+        end
         if hash.key?(:modifiers)
           splitter(hash[:modifiers]).each do |modifier|
             names += [b_name, modifier, hash[:name]].compact.permutation.to_a.map{|n|n.join(" ")}
@@ -100,10 +105,6 @@ module Dissect
                 names += [b_name, modifier, alt].compact.permutation.to_a.map{|n|n.join(" ")}
               end
             end
-          end
-        elsif hash.key?(:alternates)
-          splitter(hash[:alternates]).each do |alt|
-            names += [b_name, alt].compact.permutation.to_a.map{|n|n.join(" ")}
           end
         end
         return names.sort_by{|n|n.split.size}.reverse
