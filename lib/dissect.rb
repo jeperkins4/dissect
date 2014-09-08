@@ -13,7 +13,12 @@ module Dissect
 
     def phraser(sentence, items)
       # preprocess the items
-      items = items.select{|i|i.symbolize_keys!; !(sentence.downcase.split & i[:name].downcase.split + splitter(i[:alternates]).map{|i|i.downcase}).empty? || !(sentence.downcase.split & splitter(i[:brands]).map{|b|b.downcase}).empty?}
+      items = items.select do |i|
+        next if i.nil?
+        i.symbolize_keys!
+        !(sentence.downcase.split & i[:name].downcase.split + splitter(i[:alternates]).map{|i|i.downcase}).empty? || !(sentence.downcase.split & splitter(i[:brands]).map{|b|b.downcase}).empty?
+      end
+
       results = Set.new
       _categories = nil
       sentence.downcase! #Force downcase on string
