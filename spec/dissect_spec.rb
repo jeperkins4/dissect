@@ -54,7 +54,7 @@ describe Dissect::Text do
     it "should return a match for Apple" do
       terms = dissect.phraser('Apples', items)
       terms.each do |term|
-        term[:terms].should == 'apples'
+        term[:terms].downcase.should == 'apples'
       end
     end
 
@@ -75,7 +75,7 @@ describe Dissect::Text do
     it "should return a match for water" do
       terms = dissect.phraser('water', items)
       terms.each do |term|
-        term[:terms].should == 'water'
+        term[:terms].downcase.should == 'water'
       end
     end
 
