@@ -8,7 +8,7 @@ describe Dissect::Text do
       {name: 'bass', modifiers: 'standup, electric, fretless', brands: 'Yamaha,Fender', category: 'Musical Instrument'},
       {name: 'piano', modifiers: 'standup,grand,baby grand', brands: 'Yamaha,Casio', category: 'Musical Instrument'},
       {name: 'guitar', modifiers: 'electric, acoustic', brands: 'Gibson,Ibanez,Fender', category: 'Musical Instrument'},
-      {name: 'apple', alternates: 'apples', modifiers: 'granny smith, macintosh', brands: nil, category: 'Produce'},
+      {name: 'apple', alternates: 'apples', modifiers: 'granny smith, macintosh, fuji, honeycrisp', brands: nil, category: 'Produce'},
       {name: 'football', brands: 'Nike,Wilson', category: 'Sporting Goods'},
       #{name: 'Macbook', modifiers: 'pro, air', brands: 'Apple Computer'},
       {:id=>3368, :name=>"macbook", :modifiers=>"pro, air", :brands=>"Apple Computer, LOVEdecal, Consumer Electronics Store,iBenzer,Kuzy,Case Logic,fds,Moshi,Apple", :category=>"Electronics"},
@@ -16,7 +16,8 @@ describe Dissect::Text do
       {name: 'merlot', brands: "Frog's Leap, Rodney Strong", category: 'Beer, Wine & Spirits' },
       {name: 'cabernet sauvignon', brands: "Frog's Leap, Grgich Hills", category: 'Beer, Wine & Spirits' },
       {name: 'Al Capone', brands: nil, category: 'Inmate' },
-      {name: "bottled water", modifiers: "spring, purified, distilled, mineral", brands: "Dasani, SmartWater, FIJI Water, FIJI, Fiji", alternates: "water, water bottles", category: "Beverages"}
+      {name: "bottled water", modifiers: "spring, purified, distilled, mineral", brands: "Dasani, SmartWater, FIJI Water, FIJI, Fiji", alternates: "water, water bottles", category: "Beverages"},
+      {name: "avenue", brands: 'Park', category: "Location" }
     ]
   end
 
@@ -82,6 +83,11 @@ describe Dissect::Text do
     it "should return a match for Shoes and Merlot" do
       terms = dissect.phraser('shoes and merlot', items)
       terms.map{|term|term[:terms]}.should include('Shoes')
+    end
+
+    it "should identify Park Avenue as a street" do
+      terms = dissect.phraser('Power outage on Park Avenue', items)
+      terms.map{|term|term[:category]}.should include('Location')
     end
   end
 end
